@@ -1,0 +1,1466 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<title>Garage 24/7</title>
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --bg:#07070f;
+  --bg2:#0d0d1a;
+  --card:#111125;
+  --card2:#161630;
+  --border:#1f1f3a;
+  --border2:#2a2a4a;
+  --f1:#ff2200;
+  --f2:#ff6600;
+  --f3:#ffaa00;
+  --text:#eeeeff;
+  --muted:#44445a;
+  --muted2:#77778a;
+  --green:#00ff88;
+  --red:#ff2244;
+  --blue:#4488ff;
+  --r:14px;
+  --r2:10px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;overflow:hidden;background:var(--bg)}
+body{font-family:'Montserrat',sans-serif;color:var(--text);display:flex;flex-direction:column}
+
+/* ═══ SCROLLBAR ═══ */
+::-webkit-scrollbar{width:2px;height:2px}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* ═══ APP SHELL ═══ */
+.app{display:flex;flex-direction:column;height:100%;overflow:hidden}
+
+/* ═══ SPLASH ═══ */
+#splash{
+  position:fixed;inset:0;z-index:9999;
+  background:var(--bg);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
+  transition:opacity .5s,transform .5s;
+}
+#splash.hide{opacity:0;transform:scale(1.05);pointer-events:none}
+.splash-logo{animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{filter:drop-shadow(0 0 20px rgba(255,102,0,.4))}50%{filter:drop-shadow(0 0 40px rgba(255,102,0,.8))}}
+.splash-title{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:4px;color:#fff}
+.splash-sub{font-size:10px;letter-spacing:6px;color:var(--f2)}
+.splash-bar{width:120px;height:2px;background:var(--border);border-radius:1px;overflow:hidden;margin-top:10px}
+.splash-prog{height:100%;background:linear-gradient(90deg,var(--f1),var(--f3));border-radius:1px;animation:load 2s ease forwards}
+@keyframes load{from{width:0}to{width:100%}}
+
+/* ═══ HEADER ═══ */
+.hdr{
+  flex-shrink:0;background:var(--bg2);
+  border-bottom:1px solid var(--border);
+  padding:10px 14px 8px;
+}
+.hdr-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.logo{display:flex;align-items:center;gap:9px}
+.logo-mark{flex-shrink:0}
+.logo-name{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:#fff;line-height:1}
+.logo-tag{font-size:8px;letter-spacing:4px;color:var(--f2);font-weight:600}
+.hdr-right{display:flex;align-items:center;gap:8px}
+.notif-btn{
+  width:32px;height:32px;border-radius:8px;
+  background:var(--card);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:15px;
+  cursor:pointer;position:relative;
+}
+.notif-dot{
+  position:absolute;top:5px;right:5px;width:7px;height:7px;
+  border-radius:50%;background:var(--f1);border:1.5px solid var(--bg2);
+}
+.av{
+  width:32px;height:32px;border-radius:50%;
+  background:linear-gradient(135deg,var(--f1),var(--f3));
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Bebas Neue',sans-serif;font-size:16px;color:#fff;
+  cursor:pointer;border:1.5px solid rgba(255,102,0,.4);
+}
+
+/* SEARCH */
+.search-row{display:flex;gap:7px}
+.srch{
+  flex:1;padding:9px 13px;background:var(--card);
+  border:1px solid var(--border);border-radius:9px;
+  color:var(--text);font-family:'Montserrat',sans-serif;font-size:13px;outline:none;
+  transition:border-color .2s;
+}
+.srch:focus{border-color:var(--f2)}
+.srch::placeholder{color:var(--muted2)}
+.gps-btn{
+  width:38px;height:38px;border-radius:9px;border:none;
+  background:linear-gradient(135deg,var(--f1),var(--f3));
+  display:flex;align-items:center;justify-content:center;font-size:16px;
+  cursor:pointer;flex-shrink:0;
+}
+
+/* ═══ TABS ═══ */
+.tabs{
+  flex-shrink:0;display:flex;gap:5px;padding:8px 14px;
+  overflow-x:auto;scrollbar-width:none;
+  background:var(--bg2);border-bottom:1px solid var(--border);
+}
+.tabs::-webkit-scrollbar{display:none}
+.tab{
+  padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;
+  cursor:pointer;white-space:nowrap;border:1px solid var(--border2);
+  background:var(--card);color:var(--muted2);transition:all .2s;
+  letter-spacing:.5px;
+}
+.tab.on{background:linear-gradient(135deg,var(--f1),var(--f3));color:#fff;border-color:transparent}
+
+/* ═══ PAGE NAV ═══ */
+.pnav{
+  flex-shrink:0;display:flex;
+  background:var(--bg2);border-bottom:1px solid var(--border);
+}
+.pnav-btn{
+  flex:1;padding:9px 0;text-align:center;font-size:10px;font-weight:800;
+  color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;
+  transition:all .2s;letter-spacing:1px;
+}
+.pnav-btn.on{color:var(--f2);border-bottom-color:var(--f2)}
+
+/* ═══ CONTENT ═══ */
+.content{flex:1;overflow-y:auto;padding:12px 14px 85px}
+.page{display:none}
+.page.on{display:block}
+
+/* ═══ STATS BAR ═══ */
+.sbar{display:flex;gap:7px;margin-bottom:12px}
+.schip{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:7px;padding:6px 11px;font-size:10px;
+  display:flex;align-items:center;gap:5px;color:var(--muted2);font-weight:600;
+}
+.schip b{color:var(--f2)}
+
+/* ═══ USTAXONA CARD ═══ */
+.ucard{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:var(--r);margin-bottom:11px;overflow:hidden;
+  transition:border-color .15s,transform .1s;cursor:pointer;
+}
+.ucard:active{transform:scale(.99)}
+.ucard.vip{border-color:rgba(255,102,0,.4)}
+
+.ucard-img{
+  height:115px;position:relative;overflow:hidden;
+  background:linear-gradient(135deg,#0d0d22,#1a0808);
+  display:flex;align-items:center;justify-content:center;font-size:42px;
+}
+.ucard-img::after{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(to bottom,transparent 40%,rgba(0,0,0,.6));
+}
+.bdg{
+  position:absolute;border-radius:20px;font-size:9px;font-weight:800;
+  padding:3px 8px;z-index:1;letter-spacing:.5px;
+}
+.bdg.open{top:8px;right:8px;background:rgba(0,255,136,.15);color:var(--green);border:1px solid rgba(0,255,136,.35)}
+.bdg.closed{top:8px;right:8px;background:rgba(255,34,68,.15);color:var(--red);border:1px solid rgba(255,34,68,.35)}
+.bdg.vip{top:8px;left:8px;background:linear-gradient(90deg,var(--f1),var(--f3));color:#fff}
+
+.ucard-body{padding:11px 13px}
+.ucard-name{font-size:14px;font-weight:800;margin-bottom:3px}
+.ucard-addr{color:var(--muted2);font-size:11px;margin-bottom:7px}
+.ucard-meta{display:flex;align-items:center;gap:9px;margin-bottom:8px;flex-wrap:wrap}
+.rating{display:flex;align-items:center;gap:2px;font-size:11px;font-weight:700}
+.star{color:var(--f3)}
+.rcnt{color:var(--muted);font-size:10px}
+.dist{font-size:10px;color:var(--muted2)}
+.ptag{font-size:10px;color:var(--f2);font-weight:800}
+.xtags{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:9px}
+.xtag{background:var(--card2);border:1px solid var(--border2);border-radius:5px;padding:2px 7px;font-size:9px;color:var(--muted2);font-weight:600}
+.card-btns{display:flex;gap:6px}
+.cbtn{flex:1;padding:8px;border-radius:8px;border:none;cursor:pointer;font-family:'Montserrat',sans-serif;font-weight:800;font-size:11px;letter-spacing:.5px;transition:all .15s}
+.cbtn:active{transform:scale(.97)}
+.cbtn-fire{background:linear-gradient(135deg,var(--f1),var(--f3));color:#fff}
+.cbtn-out{background:transparent;border:1px solid var(--border2);color:var(--muted2)}
+
+/* ═══ OVERLAY ═══ */
+.overlay{
+  display:none;position:fixed;inset:0;
+  background:var(--bg);z-index:500;overflow-y:auto;
+}
+.overlay.on{display:block;animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(50px);opacity:0}to{transform:translateY(0);opacity:1}}
+
+.ov-hdr{
+  position:sticky;top:0;z-index:10;
+  background:var(--bg2);padding:11px 14px;
+  display:flex;align-items:center;gap:11px;
+  border-bottom:1px solid var(--border);
+}
+.back{
+  width:32px;height:32px;border-radius:8px;
+  background:var(--card);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;font-size:15px;flex-shrink:0;
+}
+.ov-title{font-family:'Bebas Neue',sans-serif;font-size:17px;letter-spacing:1px}
+
+.ov-img{
+  height:170px;background:linear-gradient(135deg,#0d0d22,#1a0808);
+  display:flex;align-items:center;justify-content:center;font-size:60px;
+}
+
+/* ═══ DETAIL ═══ */
+.info-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px;padding:12px 14px}
+.ibox{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:10px;padding:10px;text-align:center;
+}
+.ibox .v{font-family:'Bebas Neue',sans-serif;font-size:17px;color:var(--f2)}
+.ibox .l{color:var(--muted2);font-size:9px;margin-top:2px;letter-spacing:.5px;font-weight:600}
+.drow{
+  display:flex;align-items:center;gap:11px;
+  padding:11px 14px;border-bottom:1px solid var(--border);cursor:pointer;
+}
+.dico{
+  width:34px;height:34px;border-radius:8px;
+  background:var(--card);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;
+}
+.dtxt p:first-child{font-size:13px;font-weight:700}
+.dtxt p:last-child{font-size:10px;color:var(--muted2);margin-top:2px}
+.sec-title{font-size:9px;letter-spacing:3px;color:var(--muted);padding:14px 14px 8px;font-weight:700}
+.xrow{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:9px;padding:10px 12px;margin:0 14px 7px;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.xrow-n{font-size:12px;font-weight:700}
+.xrow-p{color:var(--f2);font-weight:800;font-size:12px;font-family:'Bebas Neue',sans-serif;letter-spacing:.5px}
+
+/* ═══ BRON OVERLAY ═══ */
+.bron-body{padding:14px}
+.blbl{font-size:9px;letter-spacing:3px;color:var(--muted);margin-bottom:6px;font-weight:700}
+.binp{
+  width:100%;padding:10px 12px;background:var(--card);
+  border:1px solid var(--border);border-radius:9px;color:var(--text);
+  font-family:'Montserrat',sans-serif;font-size:13px;outline:none;
+  margin-bottom:12px;transition:border-color .2s;appearance:none;
+}
+.binp:focus{border-color:var(--f2)}
+.binp option{background:var(--card2)}
+.time-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:12px}
+.tchip{
+  padding:8px 4px;text-align:center;border-radius:7px;
+  background:var(--card);border:1px solid var(--border);
+  font-size:11px;font-weight:800;cursor:pointer;transition:all .2s;
+}
+.tchip.on{background:linear-gradient(135deg,var(--f1),var(--f3));color:#fff;border-color:transparent}
+.tchip.dis{opacity:.25;cursor:not-allowed}
+
+/* ═══ TO'LOV ═══ */
+.pay-methods{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.pmethod{
+  background:var(--card);border:2px solid var(--border);
+  border-radius:10px;padding:12px;text-align:center;cursor:pointer;transition:all .2s;
+}
+.pmethod.on{border-color:var(--f2);background:rgba(255,102,0,.08)}
+.pmethod-ico{font-size:24px;margin-bottom:6px}
+.pmethod-name{font-size:11px;font-weight:800;letter-spacing:.5px}
+.pmethod-sub{font-size:9px;color:var(--muted2);margin-top:2px}
+
+.pay-summary{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:10px;padding:13px;margin-bottom:14px;
+}
+.pay-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0}
+.pay-row:not(:last-child){border-bottom:1px solid var(--border)}
+.pay-row span:first-child{font-size:12px;color:var(--muted2)}
+.pay-row span:last-child{font-size:12px;font-weight:700}
+.pay-total span:last-child{color:var(--f2);font-family:'Bebas Neue',sans-serif;font-size:18px}
+
+.card-input-wrap{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:10px;padding:13px;margin-bottom:12px;
+}
+.card-num{
+  width:100%;background:transparent;border:none;color:var(--text);
+  font-family:'Montserrat',sans-serif;font-size:16px;font-weight:700;
+  letter-spacing:3px;outline:none;margin-bottom:12px;
+}
+.card-num::placeholder{color:var(--muted);letter-spacing:2px;font-size:14px}
+.card-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.card-small{
+  background:transparent;border:none;border-top:1px solid var(--border);
+  color:var(--text);font-family:'Montserrat',sans-serif;font-size:14px;
+  font-weight:700;outline:none;padding-top:10px;width:100%;
+}
+.card-small::placeholder{color:var(--muted);font-size:12px}
+
+/* ═══ PROFIL ═══ */
+.prof-hero{
+  background:linear-gradient(135deg,#0d0d22,#1a0808);
+  padding:24px 14px 18px;text-align:center;
+  border-bottom:1px solid var(--border);
+}
+.prof-av{
+  width:64px;height:64px;border-radius:50%;margin:0 auto 10px;
+  background:linear-gradient(135deg,var(--f1),var(--f3));
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Bebas Neue',sans-serif;font-size:28px;color:#fff;
+  border:2px solid rgba(255,102,0,.4);
+}
+.prof-name{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:1px}
+.prof-sub{color:var(--muted2);font-size:11px;margin-top:3px}
+.sgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:12px 14px}
+.sbox{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:10px;padding:12px;text-align:center;
+}
+.sbox .n{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--f2)}
+.sbox p{color:var(--muted2);font-size:9px;margin-top:2px;letter-spacing:.5px;font-weight:600}
+.pmenu{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:10px;padding:12px 14px;
+  display:flex;align-items:center;gap:11px;
+  margin:0 14px 8px;cursor:pointer;transition:border-color .2s;
+}
+.pmenu:active{border-color:var(--f2)}
+.pmenu-ico{font-size:17px;width:28px;text-align:center}
+.pmenu-txt{flex:1}
+.pmenu-txt p:first-child{font-size:13px;font-weight:700}
+.pmenu-txt p:last-child{color:var(--muted2);font-size:10px;margin-top:2px}
+.pmenu-arr{color:var(--muted);font-size:16px}
+
+/* ═══ PANEL ═══ */
+.pgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.pbox{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:10px;padding:14px;text-align:center;
+}
+.pbox .n{font-family:'Bebas Neue',sans-serif;font-size:24px;color:var(--f2)}
+.pbox p{color:var(--muted2);font-size:9px;margin-top:3px;letter-spacing:.5px;font-weight:600}
+.pbron{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:10px;padding:12px;margin-bottom:8px;
+}
+.pbron-name{font-size:13px;font-weight:800}
+.pbron-info{color:var(--muted2);font-size:11px;margin-top:3px}
+.pbron-btns{display:flex;gap:6px;margin-top:9px}
+.pb-acc{padding:7px 14px;border-radius:7px;border:none;cursor:pointer;background:linear-gradient(135deg,var(--f1),var(--f3));color:#fff;font-family:'Montserrat',sans-serif;font-weight:800;font-size:11px;letter-spacing:.5px}
+.pb-rej{padding:7px 14px;border-radius:7px;cursor:pointer;background:transparent;border:1px solid var(--border2);color:var(--muted2);font-family:'Montserrat',sans-serif;font-weight:800;font-size:11px}
+
+/* ═══ SHARH ═══ */
+.sharh-form{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:10px;padding:13px;margin-bottom:12px;
+}
+.stars-row{display:flex;gap:8px;margin:8px 0 12px;justify-content:center}
+.star-btn{font-size:26px;cursor:pointer;transition:transform .15s;filter:grayscale(1);opacity:.4}
+.star-btn.on{filter:grayscale(0);opacity:1;transform:scale(1.15)}
+
+/* ═══ BILDIRISHNOMALAR ═══ */
+.notif-item{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:10px;padding:12px;margin-bottom:8px;
+  display:flex;gap:11px;align-items:flex-start;
+}
+.notif-ico{
+  width:34px;height:34px;border-radius:8px;
+  display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;
+}
+.notif-ico.orange{background:rgba(255,102,0,.15);border:1px solid rgba(255,102,0,.3)}
+.notif-ico.green{background:rgba(0,255,136,.15);border:1px solid rgba(0,255,136,.3)}
+.notif-ico.blue{background:rgba(68,136,255,.15);border:1px solid rgba(68,136,255,.3)}
+.notif-txt p:first-child{font-size:13px;font-weight:700}
+.notif-txt p:last-child{font-size:10px;color:var(--muted2);margin-top:3px}
+.notif-time{font-size:9px;color:var(--muted);margin-left:auto;white-space:nowrap;flex-shrink:0}
+
+/* ═══ BOTTOM NAV ═══ */
+.bnav{
+  flex-shrink:0;display:flex;
+  background:var(--bg2);border-top:1px solid var(--border);
+  padding:5px 0 10px;
+}
+.bi{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer;padding:4px 0}
+.bi-ico{font-size:19px;transition:transform .2s}
+.bi-lbl{font-size:8px;color:var(--muted);font-weight:700;letter-spacing:.5px}
+.bi.on .bi-ico{transform:scale(1.15)}
+.bi.on .bi-lbl{color:var(--f2)}
+
+/* ═══ BTN ═══ */
+.btn-fire{
+  background:linear-gradient(135deg,var(--f1),var(--f3));
+  color:#fff;border:none;border-radius:9px;padding:12px;
+  font-weight:800;font-size:13px;letter-spacing:.5px;cursor:pointer;
+  width:100%;font-family:'Montserrat',sans-serif;transition:opacity .2s;
+}
+.btn-fire:active{opacity:.85}
+.btn-out{
+  background:transparent;border:1px solid var(--border2);
+  color:var(--muted2);border-radius:9px;padding:10px;
+  font-weight:700;font-size:12px;cursor:pointer;width:100%;
+  font-family:'Montserrat',sans-serif;margin-top:7px;
+}
+
+/* ═══ TOAST ═══ */
+.toast{
+  position:fixed;bottom:80px;left:50%;transform:translateX(-50%);
+  background:#fff;color:#000;padding:9px 20px;border-radius:20px;
+  font-weight:800;font-size:12px;z-index:9999;opacity:0;
+  transition:opacity .3s;pointer-events:none;letter-spacing:.5px;white-space:nowrap;
+}
+.toast.on{opacity:1}
+
+/* ═══ EMPTY ═══ */
+.empty{text-align:center;padding:44px 20px;color:var(--muted2)}
+.empty p:first-child{font-size:38px;margin-bottom:11px}
+.empty p:last-child{font-size:12px;line-height:1.6}
+
+/* ═══ LOADING ═══ */
+.spin-wrap{text-align:center;padding:44px}
+.spin{width:30px;height:30px;border:2.5px solid var(--border2);border-top-color:var(--f2);border-radius:50%;animation:sp .7s linear infinite;margin:0 auto 12px}
+@keyframes sp{to{transform:rotate(360deg)}}
+
+/* ═══ ONBOARDING ═══ */
+#onboard{
+  position:fixed;inset:0;z-index:1000;
+  background:var(--bg);display:none;flex-direction:column;
+}
+#onboard.show{display:flex}
+.ob-slides{flex:1;display:flex;overflow:hidden}
+.ob-slide{
+  min-width:100%;padding:40px 24px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;transition:transform .4s ease;
+}
+.ob-emoji{font-size:72px;margin-bottom:24px;animation:float 3s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.ob-title{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;margin-bottom:12px}
+.ob-desc{font-size:14px;color:var(--muted2);line-height:1.7;max-width:280px}
+.ob-dots{display:flex;gap:8px;justify-content:center;padding:16px}
+.odot{width:6px;height:6px;border-radius:3px;background:var(--border2);transition:all .3s}
+.odot.on{width:20px;background:linear-gradient(90deg,var(--f1),var(--f3))}
+.ob-btns{padding:14px 20px 24px;display:flex;gap:10px}
+
+/* ═══ SEVIMLILAR ═══ */
+.sev-item{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:10px;padding:12px;margin-bottom:8px;
+  display:flex;align-items:center;gap:11px;cursor:pointer;
+}
+.sev-ico{font-size:26px;width:42px;text-align:center;flex-shrink:0}
+.sev-txt{flex:1}
+.sev-txt p:first-child{font-size:13px;font-weight:700}
+.sev-txt p:last-child{font-size:10px;color:var(--muted2);margin-top:2px}
+.sev-del{color:var(--red);font-size:18px;padding:4px}
+
+/* badge counter */
+.badge-cnt{
+  position:absolute;top:-3px;right:-3px;
+  background:var(--f1);color:#fff;border-radius:50%;
+  width:14px;height:14px;font-size:8px;font-weight:800;
+  display:flex;align-items:center;justify-content:center;
+  border:1.5px solid var(--bg2);
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ SPLASH ═══ -->
+<div id="splash">
+  <svg class="splash-logo" viewBox="0 0 240 240" width="90" height="90" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="sg" x1="0%" y1="100%" x2="100%" y2="0%">
+        <stop offset="0%" style="stop-color:#FF2200"/>
+        <stop offset="50%" style="stop-color:#FF6600"/>
+        <stop offset="100%" style="stop-color:#FFAA00"/>
+      </linearGradient>
+      <linearGradient id="sr" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" style="stop-color:#FFAA00"/>
+        <stop offset="100%" style="stop-color:#FF2200"/>
+      </linearGradient>
+    </defs>
+    <path d="M120,15 L210,58 L210,162 Q210,210 120,228 Q30,210 30,162 L30,58 Z" fill="none" stroke="url(#sr)" stroke-width="4"/>
+    <path d="M120,28 L197,67 L197,160 Q197,202 120,218 Q43,202 43,160 L43,67 Z" fill="#0c0c1a"/>
+    <text x="120" y="175" font-family="'Arial Black',Impact,sans-serif" font-size="140" font-weight="900" text-anchor="middle" fill="url(#sg)">G</text>
+  </svg>
+  <div class="splash-title">GARAGE 24/7</div>
+  <div class="splash-sub">AUTO SERVICE</div>
+  <div class="splash-bar"><div class="splash-prog"></div></div>
+</div>
+
+<!-- ═══ ONBOARDING ═══ -->
+<div id="onboard">
+  <div class="ob-slides" id="obSlides">
+    <div class="ob-slide">
+      <div class="ob-emoji">🔍</div>
+      <div class="ob-title">USTAXONA TOPING</div>
+      <div class="ob-desc">GPS orqali yaqin atrofdagi barcha avtomobil ustaxonalarini bir zumda toping</div>
+    </div>
+    <div class="ob-slide">
+      <div class="ob-emoji">📅</div>
+      <div class="ob-title">BRON QILING</div>
+      <div class="ob-desc">Qulay vaqtni tanlang va ustaxonaga oldindan bron qiling — navbatda kutmang</div>
+    </div>
+    <div class="ob-slide">
+      <div class="ob-emoji">💳</div>
+      <div class="ob-title">TEZDA TO'LANG</div>
+      <div class="ob-desc">Payme, Click, karta yoki naqd — siz tanlagan usulda qulay to'lov</div>
+    </div>
+  </div>
+  <div class="ob-dots">
+    <div class="odot on" id="od0"></div>
+    <div class="odot" id="od1"></div>
+    <div class="odot" id="od2"></div>
+  </div>
+  <div class="ob-btns">
+    <button class="btn-out" id="obSkip" onclick="obFinish()" style="flex:1">O'TKAZIB YUBORISH</button>
+    <button class="btn-fire" id="obNext" onclick="obNextSlide()" style="flex:2">KEYINGISI →</button>
+  </div>
+</div>
+
+<!-- ═══ APP ═══ -->
+<div class="app" id="appShell" style="display:none">
+
+  <!-- HEADER -->
+  <div class="hdr">
+    <div class="hdr-top">
+      <div class="logo">
+        <svg class="logo-mark" viewBox="0 0 240 240" width="34" height="34" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="lg" x1="0%" y1="100%" x2="100%" y2="0%">
+              <stop offset="0%" style="stop-color:#FF2200"/>
+              <stop offset="50%" style="stop-color:#FF6600"/>
+              <stop offset="100%" style="stop-color:#FFAA00"/>
+            </linearGradient>
+            <linearGradient id="lr" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" style="stop-color:#FFAA00"/>
+              <stop offset="100%" style="stop-color:#FF2200"/>
+            </linearGradient>
+          </defs>
+          <path d="M120,15 L210,58 L210,162 Q210,210 120,228 Q30,210 30,162 L30,58 Z" fill="none" stroke="url(#lr)" stroke-width="4"/>
+          <path d="M120,28 L197,67 L197,160 Q197,202 120,218 Q43,202 43,160 L43,67 Z" fill="#0c0c1a"/>
+          <text x="120" y="175" font-family="'Arial Black',Impact,sans-serif" font-size="140" font-weight="900" text-anchor="middle" fill="url(#lg)">G</text>
+        </svg>
+        <div>
+          <div class="logo-name">GARAGE 24/7</div>
+          <div class="logo-tag">AUTO SERVICE</div>
+        </div>
+      </div>
+      <div class="hdr-right">
+        <div class="notif-btn" onclick="goPage('notif')" style="position:relative">
+          🔔<div class="notif-dot" id="notifDot"></div>
+        </div>
+        <div class="av" id="avEl" onclick="goPage('profil')">A</div>
+      </div>
+    </div>
+    <div class="search-row">
+      <input class="srch" type="text" placeholder="Xizmat yoki ustaxona..." id="srchEl" oninput="doSearch()"/>
+      <button class="gps-btn" onclick="doGps()">📍</button>
+    </div>
+  </div>
+
+  <!-- TABS -->
+  <div class="tabs">
+    <div class="tab on" onclick="filterTab(this,'all')">BARCHASI</div>
+    <div class="tab" onclick="filterTab(this,'Moy')">🔧 MOY</div>
+    <div class="tab" onclick="filterTab(this,'Kuzov')">🚗 KUZOV</div>
+    <div class="tab" onclick="filterTab(this,'Shina')">🔄 SHINA</div>
+    <div class="tab" onclick="filterTab(this,'Diagnostika')">🔍 DIAGNOS</div>
+    <div class="tab" onclick="filterTab(this,'Dvigatel')">⚙️ DVIGATEL</div>
+    <div class="tab" onclick="filterTab(this,'Elektr')">⚡ ELEKTR</div>
+    <div class="tab" onclick="filterTab(this,'Kuzov')">🎨 BO'YAQ</div>
+  </div>
+
+  <!-- PAGE NAV -->
+  <div class="pnav">
+    <div class="pnav-btn on" id="pn-asosiy" onclick="goPage('asosiy')">RO'YXAT</div>
+    <div class="pnav-btn" id="pn-panel" onclick="goPage('panel')">PANEL</div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- ASOSIY -->
+    <div class="page on" id="pg-asosiy">
+      <div class="sbar">
+        <div class="schip"><b id="cntEl">0</b> ustaxona</div>
+        <div class="schip">📍 Yaqin atrofda</div>
+      </div>
+      <div id="listEl"><div class="spin-wrap"><div class="spin"></div></div></div>
+    </div>
+
+    <!-- BRONLARIM -->
+    <div class="page" id="pg-bronlarim">
+      <div id="bronListEl"><div class="empty"><p>📅</p><p>Hozircha bronlar yo'q.<br>Ustaxona tanlang va bron qiling!</p></div></div>
+    </div>
+
+    <!-- SEVIMLILAR -->
+    <div class="page" id="pg-sevimlilar">
+      <div id="sevListEl"><div class="empty"><p>⭐</p><p>Sevimli ustaxonalar yo'q.<br>Ustaxona sahifasida ⭐ bosing!</p></div></div>
+    </div>
+
+    <!-- BILDIRISHNOMALAR -->
+    <div class="page" id="pg-notif">
+      <div class="notif-item">
+        <div class="notif-ico orange">📅</div>
+        <div class="notif-txt">
+          <p>Broningiz tasdiqlandi</p>
+          <p>Sherzod Auto — Bugun 14:00</p>
+        </div>
+        <div class="notif-time">2 soat</div>
+      </div>
+      <div class="notif-item">
+        <div class="notif-ico green">✅</div>
+        <div class="notif-txt">
+          <p>To'lov qabul qilindi</p>
+          <p>50,000 so'm — Payme orqali</p>
+        </div>
+        <div class="notif-time">1 kun</div>
+      </div>
+      <div class="notif-item">
+        <div class="notif-ico blue">⭐</div>
+        <div class="notif-txt">
+          <p>Sharh qoldiring</p>
+          <p>Master Auto xizmatini baholang</p>
+        </div>
+        <div class="notif-time">2 kun</div>
+      </div>
+    </div>
+
+    <!-- PROFIL -->
+    <div class="page" id="pg-profil">
+      <div class="prof-hero">
+        <div class="prof-av" id="profAvEl">A</div>
+        <div class="prof-name" id="profNameEl">Foydalanuvchi</div>
+        <div class="prof-sub" id="profSubEl">Telegram orqali ulangan</div>
+      </div>
+      <div class="sgrid">
+        <div class="sbox"><div class="n" id="pBronEl">0</div><p>BRONLAR</p></div>
+        <div class="sbox"><div class="n" id="pSevEl">0</div><p>SEVIMLI</p></div>
+        <div class="sbox"><div class="n" id="pSharxEl">0</div><p>SHARHLAR</p></div>
+      </div>
+      <div class="pmenu" onclick="goPage('bronlarim')">
+        <div class="pmenu-ico">📅</div>
+        <div class="pmenu-txt"><p>Bronlarim</p><p>Barcha bronlar tarixi</p></div>
+        <div class="pmenu-arr">›</div>
+      </div>
+      <div class="pmenu" onclick="goPage('sevimlilar')">
+        <div class="pmenu-ico">⭐</div>
+        <div class="pmenu-txt"><p>Sevimlilar</p><p>Saqlangan ustaxonalar</p></div>
+        <div class="pmenu-arr">›</div>
+      </div>
+      <div class="pmenu" onclick="goPage('notif')">
+        <div class="pmenu-ico">🔔</div>
+        <div class="pmenu-txt"><p>Bildirishnomalar</p><p>Xabarlar va eslatmalar</p></div>
+        <div class="pmenu-arr">›</div>
+      </div>
+      <div class="pmenu">
+        <div class="pmenu-ico">🚗</div>
+        <div class="pmenu-txt"><p>Avtomobillarim</p><p>Saqlangan mashinalar</p></div>
+        <div class="pmenu-arr">›</div>
+      </div>
+      <div class="pmenu">
+        <div class="pmenu-ico">⚙️</div>
+        <div class="pmenu-txt"><p>Sozlamalar</p><p>Til, bildirishnomalar</p></div>
+        <div class="pmenu-arr">›</div>
+      </div>
+    </div>
+
+    <!-- PANEL -->
+    <div class="page" id="pg-panel">
+      <div class="pgrid">
+        <div class="pbox"><div class="n">12</div><p>TASHRIFLAR</p></div>
+        <div class="pbox"><div class="n">4</div><p>YANGI BRON</p></div>
+        <div class="pbox"><div class="n">4.8⭐</div><p>REYTING</p></div>
+        <div class="pbox"><div class="n">247k</div><p>SO'M DAROMAD</p></div>
+      </div>
+      <div class="sec-title" style="padding-left:0">KIRUVCHI BRONLAR</div>
+      <div id="panelBronEl">
+        <div class="pbron">
+          <div class="pbron-name">Alisher T. — Nexia 2020</div>
+          <div class="pbron-info">🔧 Moy almashtirish · ⏰ Bugun 14:00 · 💳 Payme</div>
+          <div class="pbron-btns">
+            <button class="pb-acc" onclick="pbAcc(this)">✓ QABUL</button>
+            <button class="pb-rej" onclick="pbRej(this)">✗ RAD</button>
+          </div>
+        </div>
+        <div class="pbron">
+          <div class="pbron-name">Jasur M. — Cobalt 2022</div>
+          <div class="pbron-info">🔧 Tormoz tizimi · ⏰ Ertaga 10:00 · 💵 Naqd</div>
+          <div class="pbron-btns">
+            <button class="pb-acc" onclick="pbAcc(this)">✓ QABUL</button>
+            <button class="pb-rej" onclick="pbRej(this)">✗ RAD</button>
+          </div>
+        </div>
+        <div class="pbron">
+          <div class="pbron-name">Dilnoza R. — Spark 2021</div>
+          <div class="pbron-info">🔧 Diagnostika · ⏰ Ertaga 15:00 · 💳 Click</div>
+          <div class="pbron-btns">
+            <button class="pb-acc" onclick="pbAcc(this)">✓ QABUL</button>
+            <button class="pb-rej" onclick="pbRej(this)">✗ RAD</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+
+  <!-- BOTTOM NAV -->
+  <div class="bnav">
+    <div class="bi on" onclick="goPage('asosiy')" id="bn-asosiy">
+      <div class="bi-ico">🔍</div><div class="bi-lbl">QIDIRISH</div>
+    </div>
+    <div class="bi" onclick="goPage('bronlarim')" id="bn-bronlarim">
+      <div class="bi-ico">📅</div><div class="bi-lbl">BRONLAR</div>
+    </div>
+    <div class="bi" onclick="goPage('sevimlilar')" id="bn-sevimlilar">
+      <div class="bi-ico">⭐</div><div class="bi-lbl">SEVIMLI</div>
+    </div>
+    <div class="bi" onclick="goPage('profil')" id="bn-profil">
+      <div class="bi-ico">👤</div><div class="bi-lbl">PROFIL</div>
+    </div>
+  </div>
+
+</div><!-- /app -->
+
+<!-- ═══ DETAIL OVERLAY ═══ -->
+<div class="overlay" id="detailOv">
+  <div class="ov-hdr">
+    <div class="back" onclick="closeOv('detailOv')">←</div>
+    <div class="ov-title" id="detailTitle">USTAXONA</div>
+    <div style="margin-left:auto;cursor:pointer;font-size:20px" id="sevBtn" onclick="toggleSev()">🤍</div>
+  </div>
+  <div class="ov-img" id="detailImg">🔧</div>
+  <div id="detailBody"></div>
+</div>
+
+<!-- ═══ BRON OVERLAY ═══ -->
+<div class="overlay" id="bronOv">
+  <div class="ov-hdr">
+    <div class="back" onclick="closeOv('bronOv')">←</div>
+    <div class="ov-title">BRON QILISH</div>
+  </div>
+  <div class="bron-body">
+    <div id="bronUstEl" style="margin-bottom:12px"></div>
+
+    <div class="blbl">XIZMAT TANLANG</div>
+    <select class="binp" id="bronXizEl"><option value="">Xizmat tanlang...</option></select>
+
+    <div class="blbl">AVTOMOBIL MODELI</div>
+    <input class="binp" id="bronAvtoEl" placeholder="Masalan: Nexia 2020..."/>
+
+    <div class="blbl">SANA</div>
+    <input class="binp" type="date" id="bronSanaEl"/>
+
+    <div class="blbl">VAQT</div>
+    <div class="time-grid">
+      <div class="tchip on" onclick="pickTime(this)">08:00</div>
+      <div class="tchip" onclick="pickTime(this)">09:00</div>
+      <div class="tchip" onclick="pickTime(this)">10:00</div>
+      <div class="tchip" onclick="pickTime(this)">11:00</div>
+      <div class="tchip dis">12:00</div>
+      <div class="tchip" onclick="pickTime(this)">13:00</div>
+      <div class="tchip" onclick="pickTime(this)">14:00</div>
+      <div class="tchip" onclick="pickTime(this)">15:00</div>
+      <div class="tchip" onclick="pickTime(this)">16:00</div>
+      <div class="tchip" onclick="pickTime(this)">17:00</div>
+      <div class="tchip" onclick="pickTime(this)">18:00</div>
+      <div class="tchip dis">19:00</div>
+    </div>
+
+    <div class="blbl">IZOH</div>
+    <textarea class="binp" id="bronIzohEl" rows="2" placeholder="Muammo haqida qisqacha..."></textarea>
+
+    <button class="btn-fire" onclick="goTolov()">KEYINGI: TO'LOV →</button>
+  </div>
+</div>
+
+<!-- ═══ TO'LOV OVERLAY ═══ -->
+<div class="overlay" id="tolovOv">
+  <div class="ov-hdr">
+    <div class="back" onclick="closeOv('tolovOv');openOv('bronOv')">←</div>
+    <div class="ov-title">TO'LOV</div>
+  </div>
+  <div class="bron-body">
+
+    <!-- Xulosa -->
+    <div class="blbl">BUYURTMA XULOSASI</div>
+    <div class="pay-summary" id="paySummary">
+      <div class="pay-row"><span>Ustaxona</span><span id="pUst">—</span></div>
+      <div class="pay-row"><span>Xizmat</span><span id="pXiz">—</span></div>
+      <div class="pay-row"><span>Sana / Vaqt</span><span id="pVaqt">—</span></div>
+      <div class="pay-row pay-total"><span>JAMI TO'LOV</span><span id="pJami">—</span></div>
+    </div>
+
+    <!-- To'lov usuli -->
+    <div class="blbl">TO'LOV USULINI TANLANG</div>
+    <div class="pay-methods">
+      <div class="pmethod on" onclick="selPay(this,'payme')" id="pm-payme">
+        <div class="pmethod-ico">💙</div>
+        <div class="pmethod-name">PAYME</div>
+        <div class="pmethod-sub">Payme.uz</div>
+      </div>
+      <div class="pmethod" onclick="selPay(this,'click')" id="pm-click">
+        <div class="pmethod-ico">🟢</div>
+        <div class="pmethod-name">CLICK</div>
+        <div class="pmethod-sub">Click.uz</div>
+      </div>
+      <div class="pmethod" onclick="selPay(this,'karta')" id="pm-karta">
+        <div class="pmethod-ico">💳</div>
+        <div class="pmethod-name">KARTA</div>
+        <div class="pmethod-sub">Uzcard / Humo</div>
+      </div>
+      <div class="pmethod" onclick="selPay(this,'naqd')" id="pm-naqd">
+        <div class="pmethod-ico">💵</div>
+        <div class="pmethod-name">NAQD</div>
+        <div class="pmethod-sub">Ustaxonada</div>
+      </div>
+    </div>
+
+    <!-- Karta ma'lumotlari -->
+    <div id="kartaInputWrap" style="display:none">
+      <div class="blbl">KARTA MA'LUMOTLARI</div>
+      <div class="card-input-wrap">
+        <input class="card-num" id="cardNum" maxlength="19" placeholder="0000 0000 0000 0000" oninput="fmtCard()"/>
+        <div class="card-row">
+          <input class="card-small" id="cardExp" maxlength="5" placeholder="MM/YY" oninput="fmtExp()"/>
+          <input class="card-small" id="cardCvv" maxlength="3" placeholder="CVV" type="password"/>
+        </div>
+      </div>
+    </div>
+
+    <!-- Payme/Click info -->
+    <div id="paymeInfoWrap" style="display:none">
+      <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:13px;margin-bottom:12px;text-align:center">
+        <div style="font-size:32px;margin-bottom:8px" id="payIco">💙</div>
+        <div style="font-size:13px;font-weight:700;margin-bottom:4px" id="payName">PAYME ORQALI TO'LOV</div>
+        <div style="font-size:11px;color:var(--muted2)" id="payDesc">Tugmani bosing va Payme ilovasiga o'ting</div>
+      </div>
+    </div>
+
+    <button class="btn-fire" onclick="submitTolov()" id="payBtn">💳 TO'LOVNI AMALGA OSHIRISH</button>
+    <button class="btn-out" onclick="closeOv('tolovOv')">BEKOR QILISH</button>
+  </div>
+</div>
+
+<!-- ═══ TO'LOV MUVAFFAQIYAT ═══ -->
+<div class="overlay" id="successOv">
+  <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:30px;text-align:center">
+    <div style="font-size:80px;margin-bottom:20px;animation:pop .5s ease">✅</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:2px;margin-bottom:12px">BRON TASDIQLANDI!</div>
+    <div style="color:var(--muted2);font-size:13px;line-height:1.7;margin-bottom:30px" id="successText"></div>
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px;width:100%;margin-bottom:20px" id="successCard"></div>
+    <button class="btn-fire" onclick="successDone()" style="max-width:300px">🏠 BOSH SAHIFAGA</button>
+  </div>
+</div>
+@keyframes pop{0%{transform:scale(0)}80%{transform:scale(1.2)}100%{transform:scale(1)}}
+
+<!-- ═══ SHARH OVERLAY ═══ -->
+<div class="overlay" id="sharhOv">
+  <div class="ov-hdr">
+    <div class="back" onclick="closeOv('sharhOv')">←</div>
+    <div class="ov-title">SHARH QOLDIRISH</div>
+  </div>
+  <div class="bron-body">
+    <div class="sharh-form">
+      <div style="text-align:center;margin-bottom:8px">
+        <div style="font-size:14px;font-weight:700" id="sharhUstName">Ustaxona</div>
+        <div style="font-size:11px;color:var(--muted2);margin-top:3px">Xizmatni baholang</div>
+      </div>
+      <div class="stars-row" id="starsRow">
+        <span class="star-btn" onclick="setStar(1)">⭐</span>
+        <span class="star-btn" onclick="setStar(2)">⭐</span>
+        <span class="star-btn" onclick="setStar(3)">⭐</span>
+        <span class="star-btn on" onclick="setStar(4)">⭐</span>
+        <span class="star-btn on" onclick="setStar(5)">⭐</span>
+      </div>
+      <div style="text-align:center;font-size:12px;color:var(--muted2);margin-bottom:12px" id="starLabel">Yaxshi (4)</div>
+      <textarea class="binp" id="sharhMatn" rows="4" placeholder="Xizmat haqida fikringizni yozing..."></textarea>
+      <button class="btn-fire" onclick="submitSharh()">⭐ SHARHNI YUBORISH</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toastEl"></div>
+
+<script>
+// ════════════════════════════════
+// TELEGRAM WEBAPP
+// ════════════════════════════════
+const tg = window.Telegram?.WebApp;
+if(tg){tg.expand();tg.setHeaderColor('#07070f');tg.setBackgroundColor('#07070f')}
+
+const TGUser = tg?.initDataUnsafe?.user;
+
+// ════════════════════════════════
+// STATE
+// ════════════════════════════════
+// SUPABASE CONFIG
+const API = "https://shamshod-production.up.railway.app";
+const SB_URL = "https://zpdididueiysnzmrxdco.supabase.co";
+const SB_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpwZGlkaWR1ZWl5c256bXJ4ZGNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4NDAxNTAsImV4cCI6MjA5NjQxNjE1MH0.Ev1yt8wf78l8-qhdqPe2JaGItdYXufbsAX0cZ8uC94o";
+const SB_H = {"apikey":SB_KEY,"Authorization":`Bearer ${SB_KEY}`,"Content-Type":"application/json","Prefer":"return=representation"};
+async function sbGet(t,q=""){const r=await fetch(`${SB_URL}/rest/v1/${t}${q}`,{headers:SB_H});return r.json()}
+async function sbPost(t,d){const r=await fetch(`${SB_URL}/rest/v1/${t}`,{method:"POST",headers:SB_H,body:JSON.stringify(d)});return r.json()}
+function masofa(lat1,lng1,lat2,lng2){const R=6371,dlat=(lat2-lat1)*Math.PI/180,dlng=(lng2-lng1)*Math.PI/180;const a=Math.sin(dlat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dlng/2)**2;return+(R*2*Math.asin(Math.sqrt(a))).toFixed(1)}
+let allData = [];
+let curU = null;
+let selTime = "08:00";
+let myBrons = [];
+let myFavs = [];
+let mySharhlar = 0;
+let selPMethod = 'payme';
+let selStars = 4;
+let obIdx = 0;
+
+const EMOJIS = ['🔧','🚗','⚙️','🔩','🛠️','🏎️','🔦','⛽'];
+
+const STAR_LABELS = {1:'Yomon (1)',2:'Qoniqarsiz (2)',3:'O\'rtacha (3)',4:'Yaxshi (4)',5:'A\'lo (5)'};
+
+// ════════════════════════════════
+// SPLASH & ONBOARDING
+// ════════════════════════════════
+window.addEventListener('DOMContentLoaded', ()=>{
+  // User info
+  if(TGUser){
+    const nm = `${TGUser.first_name} ${TGUser.last_name||''}`.trim();
+    const ini = nm[0].toUpperCase();
+    document.getElementById('avEl').textContent = ini;
+    document.getElementById('profAvEl').textContent = ini;
+    document.getElementById('profNameEl').textContent = nm;
+    document.getElementById('profSubEl').textContent = `@${TGUser.username||'telegram_user'}`;
+  }
+
+  // Splash 2s keyin yashirish
+  setTimeout(()=>{
+    document.getElementById('splash').classList.add('hide');
+    setTimeout(()=>{
+      document.getElementById('splash').style.display='none';
+      // Onboarding ko'rsatish (faqat birinchi marta)
+      const seen = localStorage.getItem('g247_seen');
+      if(!seen){
+        document.getElementById('onboard').classList.add('show');
+      } else {
+        showApp();
+      }
+    },500);
+  },2200);
+});
+
+function obNextSlide(){
+  obIdx++;
+  if(obIdx >= 3){obFinish();return}
+  document.querySelectorAll('.odot').forEach((d,i)=>{d.classList.toggle('on',i===obIdx)});
+  document.getElementById('obSlides').style.transform = `translateX(-${obIdx*100}%)`;
+  if(obIdx===2) document.getElementById('obNext').textContent = "BOSHLASH →";
+}
+
+function obFinish(){
+  localStorage.setItem('g247_seen','1');
+  document.getElementById('onboard').classList.remove('show');
+  showApp();
+}
+
+function showApp(){
+  document.getElementById('appShell').style.display='flex';
+  loadData();
+}
+
+// ════════════════════════════════
+// DATA
+// ════════════════════════════════
+async function loadData(lat=41.2995,lng=69.2401){
+  document.getElementById('listEl').innerHTML='<div class="spin-wrap"><div class="spin"></div></div>';
+  try{
+    // Railway API dan ustaxonalar
+    const r = await fetch(`${API}/ustaxonalar?lat=${lat}&lng=${lng}`);
+    const data = await r.json();
+    if(Array.isArray(data) && data.length){
+      allData = data.map(u=>({
+        ...u,
+        xizmatlar: u.xizmatlar_list || u.xizmatlar || [],
+        narxlar: u.narxlar || {},
+        masofa_km: u.masofa_km || 0
+      }));
+    } else {
+      allData = getDemoData();
+    }
+  } catch(e){
+    // Fallback: Supabase dan to'g'ridan
+    try{
+      const data = await sbGet("ustaxonalar","?select=*,xizmatlar(nomi,narx)&order=id");
+      if(Array.isArray(data) && data.length){
+        allData = data.map(u=>({
+          ...u,
+          xizmatlar:(u.xizmatlar||[]).map(x=>x.nomi),
+          narxlar:Object.fromEntries((u.xizmatlar||[]).map(x=>[x.nomi,x.narx])),
+          masofa_km:masofa(lat,lng,u.lat||41.2995,u.lng||69.2401)
+        }));
+        allData.sort((a,b)=>a.masofa_km-b.masofa_km);
+      } else { allData = getDemoData(); }
+    } catch { allData = getDemoData(); }
+  }
+  renderCards(allData);
+  if(TGUser){
+    fetch(`${API}/foydalanuvchi`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({tg_id:String(TGUser.id),ism:TGUser.first_name,username:TGUser.username||""})
+    }).catch(()=>{});
+  }
+}
+
+function getDemoData(){
+  return [
+    {id:1,nomi:"Sherzod Auto Servis",manzil:"Yunusobod, 5-mavze",telefon:"+998901234567",
+     reyting:4.8,sharhlar_soni:124,masofa_km:0.8,
+     xizmatlar:["Moy almashtirish","Tormoz tizimi","Dvigatel ta'miri","Diagnostika"],
+     narxlar:{"Moy almashtirish":50000,"Tormoz tizimi":80000,"Dvigatel ta'miri":200000,"Diagnostika":30000},
+     ochiq:true,ish_vaqti:"08:00–20:00"},
+    {id:2,nomi:"Master Auto",manzil:"Chilonzor, 9-kvartal",telefon:"+998907654321",
+     reyting:4.5,sharhlar_soni:89,masofa_km:2.1,
+     xizmatlar:["Kuzov ta'miri","Bo'yash","Elektr tizimi","Moy almashtirish"],
+     narxlar:{"Kuzov ta'miri":300000,"Bo'yash":500000,"Elektr tizimi":100000,"Moy almashtirish":55000},
+     ochiq:true,ish_vaqti:"09:00–19:00"},
+    {id:3,nomi:"Speed Service",manzil:"Mirzo Ulug'bek, 3-mavze",telefon:"+998991112233",
+     reyting:4.2,sharhlar_soni:56,masofa_km:3.5,
+     xizmatlar:["Shina almashtirish","Diagnostika","Balansировка"],
+     narxlar:{"Shina almashtirish":40000,"Diagnostika":25000,"Balansировка":35000},
+     ochiq:false,ish_vaqti:"08:00–22:00"},
+    {id:4,nomi:"Pro Garage",manzil:"Sergeli, 14-mavze",telefon:"+998935556677",
+     reyting:4.9,sharhlar_soni:203,masofa_km:4.2,
+     xizmatlar:["Dvigatel ta'miri","Elektr tizimi","Moy almashtirish","Diagnostika"],
+     narxlar:{"Dvigatel ta'miri":250000,"Elektr tizimi":120000,"Moy almashtirish":60000,"Diagnostika":35000},
+     ochiq:true,ish_vaqti:"07:00–21:00"},
+  ];
+}
+
+// ════════════════════════════════
+// RENDER CARDS
+// ════════════════════════════════
+function renderCards(data){
+  document.getElementById('cntEl').textContent = data.length;
+  const el = document.getElementById('listEl');
+  if(!data.length){
+    el.innerHTML=`<div class="empty"><p>🔍</p><p>Ustaxona topilmadi</p></div>`;return;
+  }
+  el.innerHTML = data.map((u,i)=>`
+    <div class="ucard ${i===0?'vip':''}" onclick="openDetail(${u.id})">
+      <div class="ucard-img">
+        ${EMOJIS[u.id%EMOJIS.length]}
+        ${i===0?'<div class="bdg vip">⚡ VIP</div>':''}
+        <div class="bdg ${u.ochiq?'open':'closed'}">${u.ochiq?'● OCHIQ':'● YOPIQ'}</div>
+      </div>
+      <div class="ucard-body">
+        <div class="ucard-name">${u.nomi}</div>
+        <div class="ucard-addr">📍 ${u.manzil}</div>
+        <div class="ucard-meta">
+          <div class="rating"><span class="star">★</span> ${u.reyting} <span class="rcnt">(${u.sharhlar_soni})</span></div>
+          <div class="dist">📏 ${u.masofa_km} km</div>
+          <div class="ptag">DAN ${Math.min(...Object.values(u.narxlar||{50000:1})).toLocaleString()} SO'M</div>
+        </div>
+        <div class="xtags">${u.xizmatlar.slice(0,3).map(x=>`<span class="xtag">${x}</span>`).join('')}</div>
+        <div class="card-btns">
+          <button class="cbtn cbtn-fire" onclick="event.stopPropagation();openBron(${u.id})">📅 BRON</button>
+          <button class="cbtn cbtn-out" onclick="event.stopPropagation();call('${u.telefon}')">📞</button>
+          <button class="cbtn cbtn-out" style="flex:none;padding:8px 10px" onclick="event.stopPropagation();addFav(${u.id})">${myFavs.find(f=>f.id===u.id)?'⭐':'🤍'}</button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ════════════════════════════════
+// DETAIL
+// ════════════════════════════════
+function openDetail(id){
+  const u = allData.find(x=>x.id===id);
+  if(!u) return;
+  curU = u;
+  document.getElementById('detailTitle').textContent = u.nomi.toUpperCase();
+  document.getElementById('detailImg').textContent = EMOJIS[u.id%EMOJIS.length];
+  document.getElementById('sevBtn').textContent = myFavs.find(f=>f.id===u.id)?'⭐':'🤍';
+
+  document.getElementById('detailBody').innerHTML = `
+    <div class="info-grid">
+      <div class="ibox"><div class="v">★ ${u.reyting}</div><div class="l">${u.sharhlar_soni} SHARH</div></div>
+      <div class="ibox"><div class="v" style="color:${u.ochiq?'var(--green)':'var(--red)'};font-size:13px">${u.ochiq?'OCHIQ':'YOPIQ'}</div><div class="l">${u.ish_vaqti}</div></div>
+      <div class="ibox"><div class="v">${u.masofa_km} KM</div><div class="l">UZOQLIK</div></div>
+    </div>
+    <div class="drow" onclick="maps('${u.manzil}')">
+      <div class="dico">📍</div>
+      <div class="dtxt"><p>${u.manzil}</p><p>Xaritada ko'rish</p></div>
+    </div>
+    <div class="drow" onclick="call('${u.telefon}')">
+      <div class="dico">📞</div>
+      <div class="dtxt"><p>${u.telefon}</p><p>Qo'ng'iroq qilish</p></div>
+    </div>
+    <div class="drow" onclick="openBron(${u.id});closeOv('detailOv')">
+      <div class="dico">📅</div>
+      <div class="dtxt"><p>Bron qilish</p><p>Vaqt band qilish</p></div>
+    </div>
+    <div class="drow" onclick="openSharh(${u.id})">
+      <div class="dico">⭐</div>
+      <div class="dtxt"><p>Sharh qoldirish</p><p>Xizmatni baholang</p></div>
+    </div>
+    <div class="sec-title">XIZMATLAR VA NARXLAR</div>
+    ${u.xizmatlar.map(x=>`
+      <div class="xrow">
+        <span class="xrow-n">🔧 ${x}</span>
+        <span class="xrow-p">${(u.narxlar?.[x]||50000).toLocaleString()} SO'M</span>
+      </div>
+    `).join('')}
+    <div style="padding:14px">
+      <button class="btn-fire" onclick="openBron(${u.id});closeOv('detailOv')">📅 BRON QILISH</button>
+    </div>
+  `;
+  openOv('detailOv');
+}
+
+// ════════════════════════════════
+// SEVIMLILAR
+// ════════════════════════════════
+function toggleSev(){
+  if(!curU) return;
+  addFav(curU.id);
+  document.getElementById('sevBtn').textContent = myFavs.find(f=>f.id===curU.id)?'⭐':'🤍';
+}
+
+function addFav(id){
+  const u = allData.find(x=>x.id===id);
+  if(!u) return;
+  const idx = myFavs.findIndex(f=>f.id===id);
+  if(idx>=0){myFavs.splice(idx,1);toast('🤍 Sevimlilardan olib tashlandi')}
+  else{myFavs.push(u);toast('⭐ Sevimlilarga qo\'shildi!')}
+  document.getElementById('pSevEl').textContent = myFavs.length;
+  renderFavs();
+  renderCards(allData);
+}
+
+function renderFavs(){
+  const el = document.getElementById('sevListEl');
+  if(!myFavs.length){
+    el.innerHTML=`<div class="empty"><p>⭐</p><p>Sevimli ustaxonalar yo'q.<br>Ustaxona sahifasida ⭐ bosing!</p></div>`;return;
+  }
+  el.innerHTML = myFavs.map(u=>`
+    <div class="sev-item" onclick="openDetail(${u.id})">
+      <div class="sev-ico">${EMOJIS[u.id%EMOJIS.length]}</div>
+      <div class="sev-txt">
+        <p>${u.nomi}</p>
+        <p>★ ${u.reyting} · 📍 ${u.masofa_km} km</p>
+      </div>
+      <div class="sev-del" onclick="event.stopPropagation();addFav(${u.id})">✕</div>
+    </div>
+  `).join('');
+}
+
+// ════════════════════════════════
+// BRON
+// ════════════════════════════════
+function openBron(id){
+  const u = allData.find(x=>x.id===id);
+  if(!u) return;
+  curU = u;
+  document.getElementById('bronUstEl').innerHTML=`
+    <div style="background:var(--card);border:1px solid var(--border);border-radius:10px;padding:11px 13px">
+      <div style="font-size:14px;font-weight:800">${u.nomi}</div>
+      <div style="font-size:11px;color:var(--muted2);margin-top:3px">📍 ${u.manzil}</div>
+    </div>`;
+  const sel = document.getElementById('bronXizEl');
+  sel.innerHTML = '<option value="">Xizmat tanlang...</option>';
+  u.xizmatlar.forEach(x=>{const o=document.createElement('option');o.value=x;o.textContent=`${x} — ${(u.narxlar?.[x]||50000).toLocaleString()} so'm`;sel.appendChild(o)});
+  const td = new Date().toISOString().split('T')[0];
+  document.getElementById('bronSanaEl').value=td;
+  document.getElementById('bronSanaEl').min=td;
+  document.getElementById('bronAvtoEl').value='';
+  document.getElementById('bronIzohEl').value='';
+  document.querySelectorAll('.tchip').forEach(c=>c.classList.remove('on'));
+  document.querySelector('.tchip:not(.dis)').classList.add('on');
+  selTime='08:00';
+  openOv('bronOv');
+}
+
+function pickTime(el){
+  if(el.classList.contains('dis')) return;
+  document.querySelectorAll('.tchip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');selTime=el.textContent;
+}
+
+function goTolov(){
+  const xiz = document.getElementById('bronXizEl').value;
+  const sana = document.getElementById('bronSanaEl').value;
+  if(!xiz){toast('⚠️ XIZMAT TANLANG');return}
+  if(!sana){toast('⚠️ SANA TANLANG');return}
+
+  // To'lov sahifasini to'ldirish
+  const narx = curU.narxlar?.[xiz] || 50000;
+  document.getElementById('pUst').textContent = curU.nomi;
+  document.getElementById('pXiz').textContent = xiz;
+  document.getElementById('pVaqt').textContent = `${sana} · ${selTime}`;
+  document.getElementById('pJami').textContent = `${narx.toLocaleString()} SO'M`;
+
+  closeOv('bronOv');
+  openOv('tolovOv');
+}
+
+// ════════════════════════════════
+// TO'LOV
+// ════════════════════════════════
+function selPay(el,method){
+  document.querySelectorAll('.pmethod').forEach(p=>p.classList.remove('on'));
+  el.classList.add('on');
+  selPMethod = method;
+
+  document.getElementById('kartaInputWrap').style.display = method==='karta'?'block':'none';
+  document.getElementById('paymeInfoWrap').style.display = (method==='payme'||method==='click')?'block':'none';
+
+  if(method==='payme'){
+    document.getElementById('payIco').textContent='💙';
+    document.getElementById('payName').textContent='PAYME ORQALI TO\'LOV';
+    document.getElementById('payDesc').textContent='Payme.uz ilovasiga yo\'naltirilasiz';
+    document.getElementById('payBtn').textContent='💙 PAYME ORQALI TO\'LASH';
+  } else if(method==='click'){
+    document.getElementById('payIco').textContent='🟢';
+    document.getElementById('payName').textContent='CLICK ORQALI TO\'LOV';
+    document.getElementById('payDesc').textContent='Click.uz ilovasiga yo\'naltirilasiz';
+    document.getElementById('payBtn').textContent='🟢 CLICK ORQALI TO\'LASH';
+  } else if(method==='naqd'){
+    document.getElementById('kartaInputWrap').style.display='none';
+    document.getElementById('paymeInfoWrap').style.display='none';
+    document.getElementById('payBtn').textContent='💵 NAQD TO\'LOVNI TASDIQLASH';
+  } else {
+    document.getElementById('payBtn').textContent='💳 KARTA ORQALI TO\'LASH';
+  }
+}
+
+function fmtCard(){
+  let v = document.getElementById('cardNum').value.replace(/\D/g,'').substring(0,16);
+  document.getElementById('cardNum').value = v.replace(/(\d{4})/g,'$1 ').trim();
+}
+function fmtExp(){
+  let v = document.getElementById('cardExp').value.replace(/\D/g,'').substring(0,4);
+  if(v.length>2) v = v.substring(0,2)+'/'+v.substring(2);
+  document.getElementById('cardExp').value = v;
+}
+
+async function submitTolov(){
+  if(selPMethod==='karta'){
+    const num = document.getElementById('cardNum').value.replace(/\s/g,'');
+    if(num.length<16){toast('⚠️ KARTA RAQAMINI TO\'LIQ KIRITING');return}
+  }
+
+  const xiz = document.getElementById('bronXizEl').value;
+  const sana = document.getElementById('bronSanaEl').value;
+  const avto = document.getElementById('bronAvtoEl').value;
+  const izoh = document.getElementById('bronIzohEl').value;
+  const narx = curU.narxlar?.[xiz]||50000;
+  const uid = TGUser?.id||'test_user';
+
+  // Loading
+  document.getElementById('payBtn').textContent='⏳ JARAYONDA...';
+  document.getElementById('payBtn').disabled=true;
+
+  await new Promise(r=>setTimeout(r,1200));
+
+  // Railway API ga saqlash
+  try{
+    await fetch(`${API}/bron`,{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        ustaxona_id:curU.id,
+        foydalanuvchi_id:String(uid),
+        sana, vaqt:selTime,
+        xizmat:xiz, avto, izoh,
+        tolov_usul:selPMethod,
+        narx, holat:'kutilmoqda'
+      })
+    });
+  }catch(e){
+    // Fallback Supabase
+    await sbPost("bronlar",{
+      ustaxona_id:curU.id,
+      foydalanuvchi_id:String(uid),
+      sana, vaqt:selTime,
+      xizmat:xiz, avto, izoh,
+      tolov_usul:selPMethod,
+      narx, holat:'kutilmoqda'
+    }).catch(()=>{});
+  }
+
+  const bron = {id:myBrons.length+1,ust:curU.nomi,ust_id:curU.id,xiz,sana,vaqt:selTime,narx,tolov:selPMethod,avto,holat:'kutilmoqda'};
+  myBrons.push(bron);
+  document.getElementById('pBronEl').textContent=myBrons.length;
+  renderBrons();
+
+  // Muvaffaqiyat
+  closeOv('tolovOv');
+  const payNames = {payme:'Payme',click:'Click',karta:'Karta',naqd:'Naqd pul'};
+  document.getElementById('successText').innerHTML = `<b>${curU.nomi}</b> ustaxonasiga bron qilindi.<br>To'lov usuli: ${payNames[selPMethod]}`;
+  document.getElementById('successCard').innerHTML = `
+    <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)"><span style="color:var(--muted2);font-size:12px">Xizmat</span><span style="font-size:12px;font-weight:700">${xiz}</span></div>
+    <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)"><span style="color:var(--muted2);font-size:12px">Sana/Vaqt</span><span style="font-size:12px;font-weight:700">${sana} · ${selTime}</span></div>
+    <div style="display:flex;justify-content:space-between;padding:5px 0"><span style="color:var(--muted2);font-size:12px">To'lov</span><span style="font-size:14px;font-weight:800;color:var(--f2);font-family:'Bebas Neue',sans-serif">${narx.toLocaleString()} SO'M</span></div>
+  `;
+  openOv('successOv');
+
+  document.getElementById('payBtn').textContent='💳 TO\'LOVNI AMALGA OSHIRISH';
+  document.getElementById('payBtn').disabled=false;
+
+  // Bildirishnoma
+  document.getElementById('notifDot').style.display='block';
+}
+
+function successDone(){
+  closeOv('successOv');
+  goPage('bronlarim');
+}
+
+// ════════════════════════════════
+// BRONLAR
+// ════════════════════════════════
+function renderBrons(){
+  const el = document.getElementById('bronListEl');
+  if(!myBrons.length){
+    el.innerHTML=`<div class="empty"><p>📅</p><p>Hozircha bronlar yo'q.<br>Ustaxona tanlang!</p></div>`;return;
+  }
+  const payIco = {payme:'💙',click:'🟢',karta:'💳',naqd:'💵'};
+  el.innerHTML = myBrons.map(b=>`
+    <div class="pbron">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div class="pbron-name">${b.ust}</div>
+        <span style="background:rgba(255,107,0,.15);color:var(--f2);border:1px solid rgba(255,107,0,.3);border-radius:20px;padding:2px 9px;font-size:9px;font-weight:800;letter-spacing:.5px">⏳ KUTILMOQDA</span>
+      </div>
+      <div class="pbron-info">🔧 ${b.xiz} · 📅 ${b.sana} · ⏰ ${b.vaqt}</div>
+      <div class="pbron-info" style="margin-top:3px">${payIco[b.tolov]} ${b.narx.toLocaleString()} so'm · 🚗 ${b.avto||'—'}</div>
+      <div style="margin-top:9px;display:flex;gap:6px">
+        <button onclick="openSharh(${b.ust_id})" style="padding:6px 12px;border-radius:7px;background:transparent;border:1px solid var(--border2);color:var(--muted2);font-size:10px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif">⭐ SHARH</button>
+        <button onclick="cancelBron(${b.id})" style="padding:6px 12px;border-radius:7px;background:transparent;border:1px solid rgba(255,34,68,.3);color:var(--red);font-size:10px;font-weight:700;cursor:pointer;font-family:'Montserrat',sans-serif">✕ BEKOR</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function cancelBron(id){
+  myBrons = myBrons.filter(b=>b.id!==id);
+  document.getElementById('pBronEl').textContent=myBrons.length;
+  renderBrons();
+  toast('✕ BRON BEKOR QILINDI');
+}
+
+// ════════════════════════════════
+// SHARH
+// ════════════════════════════════
+function openSharh(id){
+  const u = allData.find(x=>x.id===id);
+  if(!u) return;
+  curU = u;
+  document.getElementById('sharhUstName').textContent = u.nomi;
+  document.getElementById('sharhMatn').value='';
+  setStar(4);
+  openOv('sharhOv');
+}
+
+function setStar(n){
+  selStars=n;
+  document.querySelectorAll('.star-btn').forEach((s,i)=>s.classList.toggle('on',i<n));
+  document.getElementById('starLabel').textContent = STAR_LABELS[n];
+}
+
+async function submitSharh(){
+  const matn = document.getElementById('sharhMatn').value.trim();
+  if(!matn){toast('⚠️ SHARH MATNINI KIRITING');return}
+  const uid = TGUser?.id||'test_user';
+  try{
+    await sbPost("sharhlar",{
+      ustaxona_id:curU.id,
+      foydalanuvchi_id:String(uid),
+      yulduz:selStars,
+      matn
+    });
+    // Reytingni yangilash
+    const sharhlar = await sbGet("sharhlar",`?ustaxona_id=eq.${curU.id}&select=yulduz`);
+    if(sharhlar.length){
+      const avg = (sharhlar.reduce((a,s)=>a+s.yulduz,0)/sharhlar.length).toFixed(1);
+      await fetch(`${SB_URL}/rest/v1/ustaxonalar?id=eq.${curU.id}`,{
+        method:'PATCH',headers:SB_H,
+        body:JSON.stringify({reyting:parseFloat(avg),sharhlar_soni:sharhlar.length})
+      });
+    }
+  }catch(e){console.log('Sharh xato:',e)}
+  mySharhlar++;
+  document.getElementById('pSharxEl').textContent=mySharhlar;
+  closeOv('sharhOv');
+  toast(`⭐ SHARHINGIZ YUBORILDI! (${selStars} yulduz)`);
+}
+
+// ════════════════════════════════
+// PANEL
+// ════════════════════════════════
+function pbAcc(btn){
+  const b=btn.closest('.pbron');
+  b.querySelector('.pbron-btns').innerHTML=`<span style="color:var(--green);font-size:12px;font-weight:800">✓ QABUL QILINDI</span>`;
+  toast('✅ BRON QABUL QILINDI');
+}
+function pbRej(btn){
+  const b=btn.closest('.pbron');
+  b.style.opacity='.3';b.style.pointerEvents='none';
+  toast('✗ BRON RAD ETILDI');
+}
+
+// ════════════════════════════════
+// YORDAMCHILAR
+// ════════════════════════════════
+function call(tel){window.open(`tel:${tel}`)}
+function maps(m){window.open(`https://maps.google.com/?q=${encodeURIComponent(m)}`)}
+
+function doGps(){
+  if(!navigator.geolocation){toast('📍 GPS MAVJUD EMAS');return}
+  toast('📍 JOYLASHUV ANIQLANMOQDA...');
+  navigator.geolocation.getCurrentPosition(
+    p=>loadData(p.coords.latitude,p.coords.longitude),
+    ()=>toast('❌ GPS RUXSATI BERILMADI')
+  );
+}
+
+function doSearch(){
+  const q=document.getElementById('srchEl').value.toLowerCase();
+  if(!q){renderCards(allData);return}
+  renderCards(allData.filter(u=>
+    u.nomi.toLowerCase().includes(q)||
+    u.manzil.toLowerCase().includes(q)||
+    u.xizmatlar.some(x=>x.toLowerCase().includes(q))
+  ));
+}
+
+function filterTab(el,tur){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  renderCards(tur==='all'?allData:allData.filter(u=>u.xizmatlar.some(x=>x.includes(tur))));
+}
+
+function goPage(p){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.bi').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.pnav-btn').forEach(x=>x.classList.remove('on'));
+  document.getElementById(`pg-${p}`)?.classList.add('on');
+  document.getElementById(`bn-${p}`)?.classList.add('on');
+  document.getElementById(`pn-${p}`)?.classList.add('on');
+  if(p==='bronlarim') renderBrons();
+  if(p==='sevimlilar') renderFavs();
+  if(p==='notif') document.getElementById('notifDot').style.display='none';
+}
+
+function openOv(id){document.getElementById(id).classList.add('on')}
+function closeOv(id){document.getElementById(id).classList.remove('on')}
+
+function toast(msg){
+  const el=document.getElementById('toastEl');
+  el.textContent=msg;el.classList.add('on');
+  setTimeout(()=>el.classList.remove('on'),2500);
+}
+</script>
+</body>
+</html>
