@@ -18,9 +18,9 @@ from telegram.ext import (ApplicationBuilder, CommandHandler, MessageHandler,
 
 # ═══ SOZLAMALAR ═══
 import os
-BOT_TOKEN    = os.getenv("BOT_TOKEN", "BU_YERGA_TOKENINGIZNI_YOZING")
-MINIAPP_URL  = os.getenv("MINIAPP_URL", "https://shamshod-theta.vercel.app")
-ADMIN_ID     = int(os.getenv("ADMIN_ID", "123456789"))
+BOT_TOKEN    = os.getenv("BOT_TOKEN", "8644472363:AAE27q6YOLN4DQcNRJ65nx7VUgEm-8H5VV8")
+MINIAPP_URL  = os.getenv("MINIAPP_URL", "https://garage-247777-bot.vercel.app")
+ADMIN_ID     = int(os.getenv("ADMIN_ID", "8375903870"))
 SUPABASE_URL = "https://zpdididueiysnzmrxdco.supabase.co"
 SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpwZGlkaWR1ZWl5c256bXJ4ZGNvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4NDAxNTAsImV4cCI6MjA5NjQxNjE1MH0.Ev1yt8wf78l8-qhdqPe2JaGItdYXufbsAX0cZ8uC94o"
 KARTA_RAQAM  = "4073 4200 2335 2382"
